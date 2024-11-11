@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function PollList() {
   const [polls, setPolls] = useState([]);
@@ -28,25 +29,58 @@ export default function PollList() {
   }, []);
 
   if (isLoading) {
-    return <div>Loading polls...</div>;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="w-16 h-16 border-t-4 border-b-4 border-blue-500 rounded-full animate-spin"></div>
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="text-red-500">{error}</div>;
+    return (
+      <div className="p-4 text-center text-red-500 bg-red-100 rounded-lg">
+        {error}
+      </div>
+    );
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
       {polls.map((poll) => (
-        <div key={poll._id} className="p-4 bg-white rounded-lg shadow-md">
-          <h2 className="mb-2 text-xl font-semibold">{poll.title}</h2>
-          <p className="mb-4 text-gray-600">Options: {poll.options.length}</p>
-          <Link
-            href={`/polls/${poll._id}`}
-            className="inline-block px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-600"
-          >
-            View Poll
-          </Link>
+        <div
+          key={poll._id}
+          className="overflow-hidden transition-transform duration-300 bg-white rounded-lg shadow-lg hover:scale-105"
+        >
+          {poll.imageUrl && (
+            <div className="relative w-full h-48">
+              <Image
+                src={poll.imageUrl}
+                alt={poll.title}
+                layout="fill"
+                objectFit="cover"
+                className="transition-transform duration-300 hover:scale-110"
+              />
+            </div>
+          )}
+          <div className="p-4">
+            <h2 className="mb-2 text-xl font-semibold text-gray-800 truncate">
+              {poll.title}
+            </h2>
+            <p className="mb-4 text-sm text-gray-600">
+              {poll.options.length} option{poll.options.length !== 1 ? "s" : ""}
+            </p>
+            <div className="flex items-center justify-between">
+              <Link
+                href={`/polls/${poll._id}`}
+                className="px-4 py-2 font-bold text-white transition-colors duration-300 bg-blue-500 rounded-full hover:bg-blue-600"
+              >
+                Vote Now
+              </Link>
+              <span className="text-sm text-gray-500">
+                {new Date(poll.createdAt).toLocaleDateString()}
+              </span>
+            </div>
+          </div>
         </div>
       ))}
     </div>

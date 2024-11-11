@@ -13,12 +13,27 @@ export const authOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error("Email and password are required");
+        }
+
         await dbConnect();
         const user = await User.findOne({ email: credentials.email });
-        if (user && bcrypt.compareSync(credentials.password, user.password)) {
-          return { id: user._id, name: user.name, email: user.email };
+
+        if (!user) {
+          throw new Error("No user found with this email");
         }
-        return null;
+
+        const isPasswordValid = await bcrypt.compare(
+          credentials.password,
+          user.password
+        );
+
+        if (!isPasswordValid) {
+          throw new Error("Invalid password");
+        }
+
+        return { id: user._id.toString(), name: user.name, email: user.email };
       },
     }),
   ],
@@ -30,7 +45,9 @@ export const authOptions = {
       return token;
     },
     async session({ session, token }) {
-      session.user.id = token.id;
+      if (token) {
+        session.user.id = token.id;
+      }
       return session;
     },
   },
@@ -40,6 +57,8 @@ export const authOptions = {
   session: {
     strategy: "jwt",
   },
+  secret: process.env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === "development",
 };
 
 const handler = NextAuth(authOptions);

@@ -9,11 +9,13 @@ import "react-toastify/dist/ReactToastify.css";
 export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
+
     try {
       const result = await signIn("credentials", {
         redirect: false,
@@ -22,15 +24,17 @@ export default function LoginForm() {
       });
 
       if (result.error) {
-        setError("Invalid email or password");
-        toast.error("Invalid email or password");
+        toast.error(result.error);
       } else {
         toast.success("Login successful!");
         router.push("/");
+        router.refresh();
       }
     } catch (error) {
-      setError("An error occurred. Please try again.");
+      console.error("Login error:", error);
       toast.error("An error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -69,12 +73,12 @@ export default function LoginForm() {
             className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
           />
         </div>
-        {error && <p className="text-red-500">{error}</p>}
         <button
           type="submit"
-          className="w-full px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-600 focus:outline-none focus:shadow-outline"
+          disabled={isLoading}
+          className="w-full px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-600 focus:outline-none focus:shadow-outline disabled:opacity-50"
         >
-          Login
+          {isLoading ? "Logging in..." : "Login"}
         </button>
       </form>
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
