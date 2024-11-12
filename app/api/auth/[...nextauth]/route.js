@@ -4,6 +4,8 @@ import bcrypt from "bcryptjs";
 import dbConnect from "@/lib/db";
 import User from "@/models/User";
 
+/* This code snippet is setting up authentication options for a Next.js application using NextAuth.
+Here's a breakdown of what the code is doing: */
 export const authOptions = {
   providers: [
     CredentialsProvider({
@@ -20,6 +22,8 @@ export const authOptions = {
         await dbConnect();
         const user = await User.findOne({ email: credentials.email });
 
+        /* This part of the code snippet is the `authorize` function defined within the
+        `CredentialsProvider` configuration. Here's a breakdown of what it does: */
         if (!user) {
           throw new Error("No user found with this email");
         }
@@ -37,6 +41,9 @@ export const authOptions = {
       },
     }),
   ],
+  /* The `callbacks` object in the `authOptions` configuration for NextAuth is used to define functions
+  that manipulate the JWT token and session object during the authentication process. Here's a
+  breakdown of what each part of the `callbacks` object is doing: */
   callbacks: {
     async jwt({ token, user }) {
       if (user) {

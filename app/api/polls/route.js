@@ -5,6 +5,14 @@ import Poll from "@/models/Poll";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { uploadImage } from "@/lib/uploadImage";
 
+/**
+ * This function fetches all polls from the database and returns them in descending order of creation
+ * date.
+ * @returns The `GET` function is returning a JSON response containing the polls fetched from the
+ * database. If the fetching is successful, it returns the fetched polls. If there is an error during
+ * the fetching process, it returns a JSON object with a message "Failed to fetch polls" and a status
+ * code of 500.
+ */
 export async function GET() {
   try {
     await dbConnect();
@@ -19,6 +27,16 @@ export async function GET() {
   }
 }
 
+/**
+ * The above function is an asynchronous POST request handler in JavaScript that creates a poll, checks
+ * for user authentication, parses form data, and logs the received data.
+ * @param request - The `request` parameter in the code snippet represents the incoming HTTP request
+ * that the function is handling. It contains information such as headers, body, URL parameters, and
+ * other details of the request made to the server. In this case, the function is expecting a POST
+ * request to create a poll, and
+ * @returns The code snippet is returning a JSON response with a message indicating that the user must
+ * be logged in to create a poll, along with a status code of 401 (Unauthorized).
+ */
 export async function POST(request) {
   console.log("Received POST request to create poll");
   try {
@@ -45,6 +63,8 @@ export async function POST(request) {
       image: image ? "Image file received" : "No image",
     });
 
+   /* This block of code is handling the creation of a new poll in the POST request function. Here's a
+   breakdown of what it does: */
     if (!title || options.length < 2) {
       return NextResponse.json(
         { message: "Title and at least two options are required" },

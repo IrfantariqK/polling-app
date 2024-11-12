@@ -3,11 +3,15 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function PollList() {
   const [polls, setPolls] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { data: session } = useSession();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchPolls = async () => {
@@ -27,6 +31,24 @@ export default function PollList() {
     };
     fetchPolls();
   }, []);
+
+  const handleDelete = async (pollId) => {
+    if (confirm("Are you sure you want to delete this poll?")) {
+      try {
+        const response = await fetch(`/api/polls/${pollId}`, {
+          method: "DELETE",
+        });
+        if (response.ok) {
+          setPolls(polls.filter((poll) => poll._id !== pollId));
+        } else {
+          throw new Error("Failed to delete poll");
+        }
+      } catch (error) {
+        console.error("Error deleting poll:", error);
+        alert("Failed to delete poll. Please try again.");
+      }
+    }
+  };
 
   if (isLoading) {
     return (
@@ -80,6 +102,22 @@ export default function PollList() {
                 {new Date(poll.createdAt).toLocaleDateString()}
               </span>
             </div>
+            {session && session.user.id === poll.createdBy && (
+              <div className="flex justify-end mt-2 space-x-2">
+                <button
+                  onClick={() => router.push(`/polls/edit/${poll._id}`)}
+                  className="px-3 py-1 text-sm font-medium text-blue-600 bg-blue-100 rounded-full hover:bg-blue-200"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDelete(poll._id)}
+                  className="px-3 py-1 text-sm font-medium text-red-600 bg-red-100 rounded-full hover:bg-red-200"
+                >
+                  Delete
+                </button>
+              </div>
+            )}
           </div>
         </div>
       ))}
