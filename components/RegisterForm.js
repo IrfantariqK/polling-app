@@ -12,6 +12,14 @@ export default function RegisterForm() {
   const [error, setError] = useState("");
   const router = useRouter();
 
+  const validatePassword = (password) => {
+    const minLength = 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumbers = /\d/.test(password);
+    return password.length >= minLength && hasUpperCase && hasLowerCase && hasNumbers;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {

@@ -84,7 +84,7 @@ export default function CreatePollForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4" role="form" aria-label="Create Poll Form">
       <div>
         <label
           htmlFor="title"
@@ -98,6 +98,8 @@ export default function CreatePollForm() {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
+          aria-required="true"
+          aria-invalid={!title}
           className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
         />
       </div>

@@ -5,6 +5,16 @@ import Link from "next/link";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { AlertCircle, Loader2, Pencil, Trash } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function PollList() {
   const [polls, setPolls] = useState([]);
@@ -45,7 +55,7 @@ export default function PollList() {
         }
       } catch (error) {
         console.error("Error deleting poll:", error);
-        alert("Failed to delete poll. Please try again.");
+        setError("Failed to delete poll. Please try again.");
       }
     }
   };
@@ -53,26 +63,25 @@ export default function PollList() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-16 h-16 border-t-4 border-b-4 border-blue-500 rounded-full animate-spin"></div>
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-4 text-center text-red-500 bg-red-100 rounded-lg">
-        {error}
-      </div>
+      <Alert variant="destructive">
+        <AlertCircle className="w-4 h-4" />
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
     );
   }
 
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      {polls.map((poll) => (
-        <div
-          key={poll._id}
-          className="overflow-hidden transition-transform duration-300 bg-white rounded-lg shadow-lg hover:scale-105"
-        >
+      {polls.map((poll, index) => (
+        <Card key={poll._id} className="overflow-hidden">
           {poll.imageUrl && (
             <div className="relative w-full h-48">
               <Image
@@ -80,46 +89,51 @@ export default function PollList() {
                 alt={poll.title}
                 layout="fill"
                 objectFit="cover"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 className="transition-transform duration-300 hover:scale-110"
+                priority={index === 0}
               />
             </div>
           )}
-          <div className="p-4">
-            <h2 className="mb-2 text-xl font-semibold text-gray-800 truncate">
+          <CardHeader>
+            <CardTitle className="text-xl font-semibold text-gray-800 truncate">
               {poll.title}
-            </h2>
-            <p className="mb-4 text-sm text-gray-600">
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-gray-600">
               {poll.options.length} option{poll.options.length !== 1 ? "s" : ""}
             </p>
-            <div className="flex items-center justify-between">
-              <Link
-                href={`/polls/${poll._id}`}
-                className="px-4 py-2 font-bold text-white transition-colors duration-300 bg-blue-500 rounded-full hover:bg-blue-600"
+          </CardContent>
+          <CardFooter className="flex justify-between">
+            <Link href={`/polls/${poll._id}`} passHref>
+              <Button variant="outline">Vote Now</Button>
+            </Link>
+            <span className="text-sm text-gray-500">
+              {new Date(poll.createdAt).toLocaleDateString()}
+            </span>
+          </CardFooter>
+          {session && session.user.id === poll.createdBy && (
+            <CardFooter className="flex justify-end space-x-2 bg-gray-50">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.push(`/polls/edit/${poll._id}`)}
               >
-                Vote Now
-              </Link>
-              <span className="text-sm text-gray-500">
-                {new Date(poll.createdAt).toLocaleDateString()}
-              </span>
-            </div>
-            {session && session.user.id === poll.createdBy && (
-              <div className="flex justify-end mt-2 space-x-2">
-                <button
-                  onClick={() => router.push(`/polls/edit/${poll._id}`)}
-                  className="px-3 py-1 text-sm font-medium text-blue-600 bg-blue-100 rounded-full hover:bg-blue-200"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(poll._id)}
-                  className="px-3 py-1 text-sm font-medium text-red-600 bg-red-100 rounded-full hover:bg-red-200"
-                >
-                  Delete
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
+                <Pencil className="w-4 h-4 mr-2" />
+                Edit
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => handleDelete(poll._id)}
+              >
+                <Trash className="w-4 h-4 mr-2" />
+                Delete
+              </Button>
+            </CardFooter>
+          )}
+        </Card>
       ))}
     </div>
   );
